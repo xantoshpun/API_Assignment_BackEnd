@@ -1,9 +1,28 @@
 const express = require('express')
+const cors = require('cors')
+const app = express();
 const auth = require('../middleware/auth')
-
+app.use(cors());
 const User = require('../models/User')
+const Teacher = require('../models/Teacher')
 
 const router = new express.Router()
+
+
+
+router.delete('/del/:id', function (req, res) {
+    Teacher.findByIdAndDelete(req.params.id).then(function () {
+        res.send("Deleted");
+    }).catch(function (e) {
+        res.send(e)
+    });
+});
+
+router.post("/teacher", (req, res) => {
+    var myData = new Teacher(req.body);
+    myData.save();
+    res.send('Success')
+});
 
 router.post("/signup", (req, res) => {
     var myData = new User(req.body);
@@ -13,14 +32,14 @@ router.post("/signup", (req, res) => {
 
 router.post("/login", async function (req, res) {
 
-    try{
+    try {
         const user = await User.checkCrediantialsDb(req.body.mobile,
             req.body.password)
         const token = await user.generateAuthToken()
         res.send({ user, token })
     }
     catch{
-        res.send ("Sorry... Connection failed..!")
+        res.send("Sorry... Connection failed..!")
     }
 })
 
@@ -58,8 +77,24 @@ router.get("/test_user", auth, function (req, res) {
 
 })
 
-router.get('/view', auth, function (req, res) {
-    user.find().then(function (xyz) {
+router.get('/view', function (req, res) {
+    User.find().then(function (xyz) {
+        res.send(xyz);
+    }).catch(function (e) {
+        res.send(e)
+    });
+});
+
+router.get('/singleuser/:id', function (req, res) {
+    User.findOne({_id :req.params.id}).then(function (xyz) {
+        res.send(xyz);
+    }).catch(function (e) {
+        res.send(e)
+    });
+});
+
+router.get('/teach', function (req, res) {
+    Teacher.find().then(function (xyz) {
         res.send(xyz);
     }).catch(function (e) {
         res.send(e)
@@ -68,7 +103,7 @@ router.get('/view', auth, function (req, res) {
 
 
 router.delete('/deleteuser/:id', function (req, res) {
-    user.findByIdAndDelete(req.params.id).then(function () {
+    User.findByIdAndDelete(req.params.id).then(function () {
         res.send("Deleted");
     }).catch(function (e) {
         res.send(e)
